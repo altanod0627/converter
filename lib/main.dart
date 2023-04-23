@@ -1,8 +1,8 @@
+import 'package:converter/screens/home_screen.dart';
+import 'package:converter/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:converter/screens/home_screen.dart';
-import 'package:converter/screens/login_screen.dart';
 
 import 'core/core.dart';
 
@@ -20,10 +20,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Хөрвүүлэгч',
       theme: ThemeData(
         primaryColor: color.primaryColor,
         primarySwatch: getMaterialColor(color.primaryColor),
+        fontFamily: 'MongolFont',
         appBarTheme: AppBarTheme(
           systemOverlayStyle: const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -32,7 +33,6 @@ class MyApp extends StatelessWidget {
           ),
           backgroundColor: color.primaryColor,
         ),
-        fontFamily: 'MongolFont',
       ),
       debugShowCheckedModeBanner: false,
       showPerformanceOverlay: false,
@@ -40,9 +40,8 @@ class MyApp extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: auth.authStateChanges(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return const HomeScreen();
-          }
+          if (snapshot.hasData) return const HomeScreen();
+
           return const LoginScreen();
         },
       ),

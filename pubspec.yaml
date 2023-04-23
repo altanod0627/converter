@@ -17,7 +17,7 @@ dependencies:
   firebase_auth: ^4.4.2
   firebase_core: ^2.10.0
   mongol: ^4.0.0
-#  shared_preferences: ^2.1.0
+  shared_preferences: ^2.1.0
 
 
 dev_dependencies:
@@ -29,6 +29,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/img/
+    - assets/json/
 
   fonts:
     - family: DashitsedenFont
