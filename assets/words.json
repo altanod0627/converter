@@ -1,0 +1,30 @@
+[
+  {
+    "krill": "аав",
+    "traditional": "ᠠᠪᠤ",
+    "spell": "абу",
+    "spellEnglish": "abu",
+    "description": "Өөрийн эцгийг дуудах үг"
+  },
+  {
+    "krill": "ээж",
+    "traditional": "ᠡᠵᠢ",
+    "spell": "эжи",
+    "spellEnglish": "eji",
+    "description": "Тээж төрүүлсэн эмэгтэй, эх"
+  },
+  {
+    "krill": "эмээ",
+    "traditional": "ᠡᠮᠡᠭᠡ",
+    "spell": "эмэгэ",
+    "spellEnglish": "emege",
+    "description": "Настай эмэгтэй хүн"
+  },
+  {
+    "krill": "өвөө",
+    "traditional": "ᠡᠪᠦᠭᠡ",
+    "spell": "эбүгэ",
+    "spellEnglish": "ebuge",
+    "description": "Тээж төрүүлсэн эмэгтэй, эх"
+  }
+]

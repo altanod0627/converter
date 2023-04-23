@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "671220327435",
+    "project_id": "mongolbichig-a4767",
+    "storage_bucket": "mongolbichig-a4767.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:671220327435:android:a97f961557b6ac5648130e",
+        "android_client_info": {
+          "package_name": "com.application.converter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "671220327435-fege2goe4sfdlh2872qodaobp9mmeiim.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWBBGXk7IgCmjFe9wWZTSClhjQalS9pCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "671220327435-fege2goe4sfdlh2872qodaobp9mmeiim.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
