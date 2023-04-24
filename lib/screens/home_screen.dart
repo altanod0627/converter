@@ -13,8 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController controller = TextEditingController();
-  List<WordModel> searchList = [];
-  List<WordModel> lastSearchList = [];
+  List<String> sendHistory = [];
 
   @override
   void initState() {
@@ -33,21 +32,46 @@ class _HomeScreenState extends State<HomeScreen> {
     InputDecoration decoration = InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       border: app.isTraditionalKeyboard ? MongolOutlineInputBorder(borderRadius: BorderRadius.circular(5)) : OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
-      labelText: app.isTraditionalKeyboard ? 'ᠬᠠᠶᠢᠬᠤ' : 'Хайх үг',
-      suffixIcon: controller.text.isNotEmpty
-          ? IconButton(
-              onPressed: () {
-                controller.clear();
-                search();
-              },
-              icon: const Icon(Icons.clear, color: Colors.black),
-            )
-          : null,
+      labelText: app.isTraditionalKeyboard ? 'ᠮᠧᠰᠰᠡᠵ ᠪᠢᠴᠢᠬᠦ' : 'Чат бичих',
+      suffixIcon: IconButton(
+        onPressed: search,
+        icon: Icon(Icons.send, color: color.primaryColor),
+      ),
     );
 
     double fontSize = 20;
 
+    Widget chatSection = Expanded(
+      child: ListView(
+        children: [
+          for (var item in sendHistory)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LimitedBox(
+                  maxWidth: MediaQuery.of(context).size.width * .6,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: color.primaryColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        bottomLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15),
+                      ),
+                    ),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(15),
+                    child: Text(item, style: const TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+
     List<Widget> children = [
+      if (!app.isTraditionalKeyboard) chatSection,
       app.isTraditionalKeyboard
           ? Container(
               margin: const EdgeInsets.only(right: 16),
@@ -71,74 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 readOnly: true,
               ),
             ),
-      Expanded(
-        child: ListView(
-          children: [
-            for (var item in (searchList.isNotEmpty
-                ? searchList
-                : controller.text.isEmpty
-                    ? lastSearchList
-                    : []))
-              ListTile(
-                title: app.isTraditionalKeyboard ? MongolText(item.traditional) : Text(item.krill),
-                contentPadding: const EdgeInsets.only(left: 16),
-                trailing: searchList.isEmpty
-                    ? IconButton(
-                        onPressed: () => removeSearchWord(item),
-                        icon: const Icon(Icons.delete_outline, color: Colors.black),
-                      )
-                    : null,
-                onTap: () {
-                  saveSearchWord(item);
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) {
-                      return Container(
-                        height: 150,
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Text(item.krill, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
-                            Expanded(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.black38))),
-                                    padding: const EdgeInsets.only(right: 16),
-                                    child: MongolText(item.traditional, style: const TextStyle(fontSize: 30)),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(item.spell),
-                                            const SizedBox(width: 4),
-                                            Text('(${item.spellEnglish})', style: const TextStyle(color: Colors.black38)),
-                                          ],
-                                        ),
-                                        Text(item.description),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-          ],
-        ),
-      ),
+      if (app.isTraditionalKeyboard) chatSection,
     ];
 
     return Scaffold(
@@ -165,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onBackspace: backspace,
             onChangeKeyboard: () {
               controller.clear();
-              search();
               storage.setBool(SPKey.isTraditionalKeyboard.toString(), app.isTraditionalKeyboard);
               setState(() {});
             },
@@ -178,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void insertText(String myText) {
     controller.text = controller.text + myText;
     controller.selection = TextSelection.collapsed(offset: controller.text.length);
-    search();
   }
 
   void backspace() {
@@ -186,87 +141,55 @@ class _HomeScreenState extends State<HomeScreen> {
       controller.text = controller.text.substring(0, controller.text.length - 1);
       controller.selection = TextSelection.collapsed(offset: controller.text.length);
     }
-    search();
   }
 
   void search() {
-    if (controller.text.isNotEmpty) {
-      if (app.isTraditionalKeyboard) {
-        searchList = app.words.where((element) => element.traditional.contains(controller.text)).toList();
-      } else {
-        searchList = app.words.where((element) => element.krill.contains(controller.text)).toList();
+    String string = '';
+    List<String> texts = controller.text.trim().split(' ');
+
+    for (var item in texts) {
+      List<WordModel> words = app.words.where((element) => element.traditional == item || element.krill == item).toList();
+
+      if (string.isNotEmpty) string += ' ';
+
+      if (words.isNotEmpty) {
+        string += app.isTraditionalKeyboard ? words.first.krill : words.first.traditional;
       }
-    } else {
-      searchList.clear();
-      getLastSearch();
     }
-    setState(() {});
+    controller.clear();
+    saveSendString(string);
   }
 
-  void saveSearchWord(WordModel word) {
-    if (app.isTraditionalKeyboard) {
-      String savedTraditional = storage.getString(SPKey.savedTraditional.toString()) ?? '';
-      if (!savedTraditional.contains(word.traditional)) {
-        if (savedTraditional.isNotEmpty) savedTraditional += ',';
+  void saveSendString(String string) {
+    String savedText = storage.getString(SPKey.sendText.toString()) ?? '';
+    List<String> strings = savedText.split(',');
+    if (!strings.contains(string)) {
+      if (savedText.isNotEmpty) savedText += ',';
 
-        savedTraditional += word.traditional;
-        storage.setString(SPKey.savedTraditional.toString(), savedTraditional);
-      }
-    } else {
-      String savedKrill = storage.getString(SPKey.savedKrill.toString()) ?? '';
-      if (!savedKrill.contains(word.krill)) {
-        if (savedKrill.isNotEmpty) savedKrill += ',';
-
-        savedKrill += word.krill;
-        storage.setString(SPKey.savedKrill.toString(), savedKrill);
-      }
+      savedText += string;
+      storage.setString(SPKey.sendText.toString(), savedText);
     }
-
-    setState(() {});
+    getLastSearch();
   }
 
-  void removeSearchWord(WordModel word) {
-    if (app.isTraditionalKeyboard) {
-      String savedTraditional = storage.getString(SPKey.savedTraditional.toString()) ?? '';
-      List<String> strings = savedTraditional.split(',');
-      strings.removeWhere((element) => element == word.traditional);
-      String newSaved = strings.join(',');
-      storage.setString(SPKey.savedTraditional.toString(), newSaved);
-    } else {
-      String savedKrill = storage.getString(SPKey.savedKrill.toString()) ?? '';
-      List<String> strings = savedKrill.split(',');
-      strings.removeWhere((element) => element == word.krill);
-      String newSaved = strings.join(',');
-      storage.setString(SPKey.savedKrill.toString(), newSaved);
-    }
+  void removeSearchString(String string) {
+    String savedText = storage.getString(SPKey.sendText.toString()) ?? '';
+    List<String> strings = savedText.split(',');
+    strings.removeWhere((element) => element == string);
+    String newSaved = strings.join(',');
+    storage.setString(SPKey.sendText.toString(), newSaved);
 
     getLastSearch();
   }
 
   void getLastSearch() {
-    lastSearchList.clear();
+    sendHistory.clear();
 
-    if (app.isTraditionalKeyboard) {
-      String savedTraditional = storage.getString(SPKey.savedTraditional.toString()) ?? '';
-      if (savedTraditional.isNotEmpty) {
-        List<String> strings = savedTraditional.split(',');
-        for (var item in strings) {
-          List<WordModel> word = app.words.where((element) => element.traditional == item).toList();
-          if (word.isNotEmpty) {
-            lastSearchList.add(word.first);
-          }
-        }
-      }
-    } else {
-      String savedKrill = storage.getString(SPKey.savedKrill.toString()) ?? '';
-      if (savedKrill.isNotEmpty) {
-        List<String> strings = savedKrill.split(',');
-        for (var item in strings) {
-          List<WordModel> word = app.words.where((element) => element.krill == item).toList();
-          if (word.isNotEmpty) {
-            lastSearchList.add(word.first);
-          }
-        }
+    String savedText = storage.getString(SPKey.sendText.toString()) ?? '';
+    if (savedText.isNotEmpty) {
+      List<String> strings = savedText.split(',');
+      for (var item in strings) {
+        sendHistory.add(item);
       }
     }
 

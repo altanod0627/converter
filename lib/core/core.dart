@@ -65,4 +65,4 @@ class Consts {
   ];
 }
 
-enum SPKey { savedKrill, savedTraditional, isTraditionalKeyboard }
+enum SPKey { sendText, isTraditionalKeyboard }

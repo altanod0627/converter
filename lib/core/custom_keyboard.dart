@@ -44,7 +44,7 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
                   ),
                 ),
               ),
-              const SizedBox(width: 1),
+              textKey(' ', flex: 3),
               Expanded(child: BackspaceKey(onBackspace: backspaceHandler)),
             ],
           ),
@@ -56,33 +56,37 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
   Widget buildRow(List<String> letters) {
     return Row(
       children: [
-        for (var item in letters)
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(0.5),
-              child: Material(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () => textInputHandler(item),
-                  child: SizedBox(
-                    height: 50,
-                    child: Center(
-                      child: app.isTraditionalKeyboard
-                          ? MongolText(
-                              item,
-                              style: TextStyle(color: color.primaryColor, fontSize: 20),
-                            )
-                          : Text(
-                              item,
-                              style: TextStyle(color: color.primaryColor, fontSize: 20),
-                            ),
-                    ),
-                  ),
-                ),
+        for (var item in letters) textKey(item),
+      ],
+    );
+  }
+
+  Widget textKey(String char, {flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        margin: const EdgeInsets.all(0.5),
+        child: Material(
+          color: Colors.white,
+          child: InkWell(
+            onTap: () => textInputHandler(char),
+            child: SizedBox(
+              height: 50,
+              child: Center(
+                child: app.isTraditionalKeyboard
+                    ? MongolText(
+                        char,
+                        style: TextStyle(color: color.primaryColor, fontSize: 20),
+                      )
+                    : Text(
+                        char,
+                        style: TextStyle(color: color.primaryColor, fontSize: 20),
+                      ),
               ),
             ),
-          )
-      ],
+          ),
+        ),
+      ),
     );
   }
 
