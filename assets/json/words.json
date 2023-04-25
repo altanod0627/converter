@@ -1,30 +1,50 @@
 [
   {
     "krill": "сайн",
-    "traditional": "sn"
+    "traditional": "ᠰᠠᠢᠨ"
   },
   {
     "krill": "байна",
-    "traditional": "bn"
+    "traditional": "ᠪᠠᠶᠢᠨ᠎ᠠ"
   },
   {
     "krill": "уу",
-    "traditional": "uu"
+    "traditional": "ᠥᠥ"
   },
   {
-    "krill": "юу",
-    "traditional": "yu"
+    "krill": "өглөө",
+    "traditional": "ᡉᡕᠷᠯᡉᡗᠠ"
   },
   {
-    "krill": "даа",
-    "traditional": "daa"
+    "krill": "орой",
+    "traditional": "ᡆᠷᡆᡕ"
   },
   {
-    "krill": "өдрийн",
-    "traditional": "udriin"
+    "krill": "өдөр",
+    "traditional": "ᠠ᠋ᡑᡆᠷ"
   },
   {
     "krill": "мэнд",
-    "traditional": "mend"
+    "traditional": "ᡏᠠ᠋ᡖᡉ"
+  },
+  {
+    "krill": "хаваржиж",
+    "traditional": "ᠬᠠᠪᠣᠷᠵᠢᠵᠣ"
+  },
+  {
+    "krill": "намаржиж",
+    "traditional": "ᠨᠠᠮᠣᠷᠵᠢᠵᠤ"
+  },
+  {
+    "krill": "зусаж",
+    "traditional": "ᠵᠣᠰᠠᠵᠦ"
+  },
+  {
+    "krill": "өвөлжиж",
+    "traditional": "ᠠ᠋ᠪᠣᠯᠵᡕᠵᠣ"
+  },
+  {
+    "krill": "сайхан",
+    "traditional": "ᠰᠠᠶᠢᠬᠠᠨ"
   }
 ]

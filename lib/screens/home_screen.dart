@@ -2,6 +2,7 @@ import 'package:converter/core/core.dart';
 import 'package:converter/core/custom_keyboard.dart';
 import 'package:converter/core/word_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mongol/mongol.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -50,18 +51,23 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 LimitedBox(
                   maxWidth: MediaQuery.of(context).size.width * .6,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: color.primaryColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        bottomLeft: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
+                  child: GestureDetector(
+                    onLongPress: () {
+                      Clipboard.setData(ClipboardData(text: item));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: color.primaryColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          bottomLeft: Radius.circular(15),
+                          bottomRight: Radius.circular(15),
+                        ),
                       ),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(15),
+                      child: RegExp(r'^[а-яөү]+$').hasMatch(item) ? Text(item, style: const TextStyle(color: Colors.white)) : MongolText(item, style: const TextStyle(color: Colors.white)),
                     ),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(15),
-                    child: Text(item, style: const TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -167,7 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (savedText.isNotEmpty) savedText += ',';
 
       savedText += string;
-      storage.setString(SPKey.sendText.toString(), savedText);
+      if (savedText.isNotEmpty) {
+        storage.setString(SPKey.sendText.toString(), savedText);
+      }
     }
     getLastSearch();
   }
