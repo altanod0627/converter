@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:converter/core/core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +14,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String error = '';
   String verificationId = '';
   bool isLoading = false;
   AuthMode mode = AuthMode.login;
-  bool obscure = false;
+  bool obscure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +62,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 Column(
                   children: [
+                    if (mode == AuthMode.register) ...[
+                      TextFormField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          hintText: 'Нэр',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (val) => setState(() {}),
+                        validator: (value) {
+                          if (value != null && value.isEmpty) {
+                            return 'Заавал оруулах';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     TextFormField(
                       controller: emailController,
                       decoration: const InputDecoration(
@@ -128,10 +148,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                     password: passwordController.text,
                                   );
                                 } else if (mode == AuthMode.register) {
-                                  await auth.createUserWithEmailAndPassword(
+                                  var res = await auth.createUserWithEmailAndPassword(
                                     email: emailController.text,
                                     password: passwordController.text,
                                   );
+
+                                  if (res.user != null) {
+                                    res.user!.updateDisplayName(nameController.text);
+
+                                    FirebaseFirestore.instance.collection('users').doc(res.user!.uid).set({
+                                      'name': nameController.text,
+                                      'email': emailController.text,
+                                      'uid': res.user!.uid,
+                                    });
+                                  }
                                 }
                               } on FirebaseAuthException catch (e) {
                                 setState(() {

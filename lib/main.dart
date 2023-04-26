@@ -1,10 +1,10 @@
-import 'package:converter/screens/home_screen.dart';
 import 'package:converter/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'core/core.dart';
+import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
             statusBarBrightness: Brightness.light,
           ),
           backgroundColor: color.primaryColor,
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
       ),
       debugShowCheckedModeBanner: false,
