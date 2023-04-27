@@ -162,10 +162,10 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
                   } else {
                     FirebaseFirestore.instance.collection('peers').add({
                       'userIds': [auth.currentUser!.uid, user['uid']],
-                      'fromId': auth.currentUser!.uid,
-                      'fromName': auth.currentUser!.displayName,
-                      'peerId': user['uid'],
-                      'peerName': user['name'],
+                      'fromUserId': auth.currentUser!.uid,
+                      'fromUserName': auth.currentUser!.displayName,
+                      'peerUserId': user['uid'],
+                      'peerUserName': user['name'],
                       'createdAt': DateTime.now(),
                     }).then((value) {
                       Navigator.pop(context);

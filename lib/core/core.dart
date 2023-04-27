@@ -65,4 +65,4 @@ class Consts {
   ];
 }
 
-enum SPKey { sendText, isTraditionalKeyboard }
+enum SPKey { isTraditionalKeyboard }
