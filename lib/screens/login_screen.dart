@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: const InputDecoration(
                           hintText: 'Нэр',
                           border: OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                         ),
                         onChanged: (val) => setState(() {}),
                         validator: (value) {
@@ -85,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: const InputDecoration(
                         hintText: 'И-мэйл',
                         border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10),
                       ),
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
@@ -105,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         hintText: 'Нууц үг',
                         border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                         suffixIcon: passwordController.text.isNotEmpty
                             ? IconButton(
                                 onPressed: () {
@@ -134,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: isLoading ? 50 : double.infinity,
                   height: 50,
                   child: isLoading
-                      ? const CircularProgressIndicator.adaptive()
+                      ? const Center(child: CircularProgressIndicator())
                       : ElevatedButton(
                           onPressed: () async {
                             if (formKey.currentState?.validate() ?? false) {
@@ -172,9 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   error = '$e';
                                 });
                               } finally {
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                if (mounted) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
                               }
                             }
                           },

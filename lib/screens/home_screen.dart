@@ -15,8 +15,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Хэрэглэгч: ${auth.currentUser?.displayName ?? ''}', style: const TextStyle(color: Colors.white, fontSize: 14)),
+        title: (auth.currentUser?.displayName ?? '').isNotEmpty
+            ? Text(
+                'Нэвтэрсэн: ${auth.currentUser?.displayName ?? ''}',
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              )
+            : null,
         centerTitle: true,
         actions: [
           IconButton(
@@ -27,38 +33,43 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('peers').snapshots(),
+        stream: FirebaseFirestore.instance.collection('peers').where('userIds', arrayContains: auth.currentUser!.uid).snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasData) {
             if ((snapshot.data?.docs.length ?? 0) > 0) {
               return ListView.builder(
                 padding: const EdgeInsets.all(10),
-                itemBuilder: (context, i) => InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        peerId: snapshot.data!.docs[i].id,
-                        peerUserId: snapshot.data?.docs[i]['peerId'],
-                        peerUserName: snapshot.data?.docs[i]['peerName'],
+                itemCount: snapshot.data?.docs.length,
+                itemBuilder: (context, i) => Container(
+                  margin: const EdgeInsets.only(bottom: 5),
+                  child: InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          peerId: snapshot.data!.docs[i].id,
+                          peerUserId: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerId'] : snapshot.data?.docs[i]['fromId'],
+                          peerUserName: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerName'] : snapshot.data?.docs[i]['fromName'],
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      child: Row(
+                        children: [
+                          const CircleAvatar(child: Icon(Icons.person, color: Colors.white)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerName'] : snapshot.data?.docs[i]['fromName']),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 5),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(child: Icon(Icons.person, color: Colors.white)),
-                        const SizedBox(width: 10),
-                        Expanded(child: Text(snapshot.data?.docs[i]['peerName'])),
-                      ],
-                    ),
-                  ),
                 ),
-                itemCount: snapshot.data?.docs.length,
               );
             } else {
-              return const Center(child: Text('Хэрэглэгчийн чат олдсонгүй'));
+              return const Center(child: Text('Хэрэглэгч олдсонгүй'));
             }
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -87,6 +98,7 @@ class UserSearchBottomSheet extends StatefulWidget {
 
 class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
   TextEditingController controller = TextEditingController();
+  bool isLoading = false;
 
   List<QueryDocumentSnapshot> users = [];
 
@@ -104,28 +116,36 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
               Expanded(
                 child: TextFormField(
                   controller: controller,
+                  autofocus: true,
                   decoration: const InputDecoration(
                     hintText: 'Чатлах хүн хайх',
                     border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   ),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  FirebaseFirestore.instance
-                      .collection('users')
-                      .where(
-                        'name',
-                        isEqualTo: controller.text,
-                      )
-                      .get()
-                      .then((QuerySnapshot querySnapshot) {
-                    users = querySnapshot.docs;
-                    setState(() {});
-                  });
-                },
-              ),
+              const SizedBox(width: 10),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        users.clear();
+
+                        CollectionReference userRef = FirebaseFirestore.instance.collection('users');
+                        var snapshot = await userRef.where('name', isEqualTo: controller.text).get();
+                        users.addAll(snapshot.docs);
+                        var snapshot2 = await userRef.where('email', isEqualTo: controller.text).get();
+                        users.addAll(snapshot2.docs);
+
+                        setState(() {
+                          isLoading = false;
+                        });
+                      },
+                    ),
             ],
           ),
           const SizedBox(height: 10),
@@ -141,7 +161,9 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
                     );
                   } else {
                     FirebaseFirestore.instance.collection('peers').add({
+                      'userIds': [auth.currentUser!.uid, user['uid']],
                       'fromId': auth.currentUser!.uid,
+                      'fromName': auth.currentUser!.displayName,
                       'peerId': user['uid'],
                       'peerName': user['name'],
                       'createdAt': DateTime.now(),

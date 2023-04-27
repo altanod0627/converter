@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:converter/core/core.dart';
 import 'package:converter/core/custom_keyboard.dart';
 import 'package:converter/core/word_model.dart';
@@ -20,6 +21,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<String> sendHistory = [];
   List<WordModel> suggest = [];
   ScrollController scrollController = ScrollController();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -39,75 +41,90 @@ class _ChatScreenState extends State<ChatScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       border: app.isTraditionalKeyboard ? MongolOutlineInputBorder(borderRadius: BorderRadius.circular(5)) : OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
       labelText: app.isTraditionalKeyboard ? 'ᠮᠧᠰᠰᠡᠵ ᠪᠢᠴᠢᠬᠦ' : 'Чат бичих',
-      suffixIcon: IconButton(
-        onPressed: search,
-        icon: Icon(Icons.send, color: color.primaryColor),
-      ),
+      suffixIcon: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : IconButton(
+              onPressed: submit,
+              icon: Icon(Icons.send, color: color.primaryColor),
+            ),
     );
 
     double fontSize = 20;
 
     Widget chatSection = Expanded(
-      child: ListView(
-        controller: scrollController,
-        children: [
-          for (var item in sendHistory)
-            Row(
-              children: [
-                LimitedBox(
-                  maxWidth: MediaQuery.of(context).size.width * .6,
-                  child: InkWell(
-                    onLongPress: () => showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) => Dialog(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              const Text('Устгах уу?'),
-                              const SizedBox(height: 15),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Хаах'),
+      child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('messages').where('peerId', isEqualTo: widget.peerId).orderBy('createdAt', descending: true).snapshots(),
+          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasData) {
+              if ((snapshot.data?.docs.length ?? 0) > 0) {
+                return ListView.builder(
+                  controller: scrollController,
+                  itemCount: snapshot.data?.docs.length,
+                  itemBuilder: (context, i) => LimitedBox(
+                    maxWidth: MediaQuery.of(context).size.width * .6,
+                    child: InkWell(
+                      onLongPress: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => Dialog(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                const Text('Устгах уу?'),
+                                const SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Хаах'),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        removeSearchString(item);
-                                      },
-                                      child: const Text('Устгах'),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          removeSearchString(snapshot.data?.docs[i]['peerId']);
+                                        },
+                                        child: const Text('Устгах'),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: color.primaryColor,
-                        borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                      child: Row(
+                        mainAxisAlignment: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? color.primaryColor : Colors.black38,
+                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                            ),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(15),
+                            child: RegExp(r'^[а-яөү .,]+$').hasMatch(snapshot.data?.docs[i]['message'])
+                                ? Text(snapshot.data?.docs[i]['message'], style: const TextStyle(color: Colors.white))
+                                : MongolText(snapshot.data?.docs[i]['message'], style: const TextStyle(color: Colors.white)),
+                          ),
+                        ],
                       ),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(15),
-                      child: RegExp(r'^[а-яөү ]+$').hasMatch(item) ? Text(item, style: const TextStyle(color: Colors.white)) : MongolText(item, style: const TextStyle(color: Colors.white)),
                     ),
                   ),
-                ),
-              ],
-            ),
-        ],
-      ),
+                );
+              } else {
+                return const Center(child: Text('Хэрэглэгчийн чат олдсонгүй'));
+              }
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          }),
     );
 
     List<Widget> children = [
@@ -250,7 +267,7 @@ class _ChatScreenState extends State<ChatScreen> {
     insertText(text);
   }
 
-  void search() {
+  void submit() {
     String string = '';
     List<String> texts = controller.text.trim().split(' ');
 
@@ -263,9 +280,27 @@ class _ChatScreenState extends State<ChatScreen> {
         string += app.isTraditionalKeyboard ? words.first.krill : words.first.traditional;
       }
     }
-    controller.clear();
+
     if (string.isNotEmpty) {
-      saveSendString(string);
+      setState(() {
+        isLoading = true;
+      });
+      FirebaseFirestore.instance.collection('messages').add({
+        'fromId': auth.currentUser!.uid,
+        'fromName': auth.currentUser!.displayName,
+        'peerId': widget.peerId,
+        'peerUserId': widget.peerUserId,
+        'peerUserName': widget.peerUserName,
+        'message': string,
+        'createdAt': DateTime.now(),
+      }).then((value) {
+        controller.clear();
+        setState(() {
+          isLoading = false;
+        });
+      });
+
+      // saveSendString(string);
     }
   }
 
