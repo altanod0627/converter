@@ -48,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       MaterialPageRoute(
                         builder: (context) => ChatScreen(
                           peerId: snapshot.data!.docs[i].id,
-                          peerUserId: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerId'] : snapshot.data?.docs[i]['fromId'],
-                          peerUserName: snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerName'] : snapshot.data?.docs[i]['fromName'],
+                          peerUserId: snapshot.data?.docs[i]['fromUserId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerUserId'] : snapshot.data?.docs[i]['fromUserId'],
+                          peerUserName: snapshot.data?.docs[i]['fromUserId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerUserName'] : snapshot.data?.docs[i]['fromUserName'],
                         ),
                       ),
                     ),
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const CircleAvatar(child: Icon(Icons.person, color: Colors.white)),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(snapshot.data?.docs[i]['fromId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerName'] : snapshot.data?.docs[i]['fromName']),
+                            child: Text(snapshot.data?.docs[i]['fromUserId'] == auth.currentUser!.uid ? snapshot.data?.docs[i]['peerUserName'] : snapshot.data?.docs[i]['fromUserName']),
                           ),
                         ],
                       ),
@@ -152,13 +152,9 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
           for (var user in users)
             InkWell(
               onTap: () {
-                FirebaseFirestore.instance.collection('peers').where('peerId', isEqualTo: user['uid']).get().then((value) {
+                FirebaseFirestore.instance.collection('peers').where('peerUserId', isEqualTo: user['uid']).get().then((value) {
                   if (value.docs.isNotEmpty) {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ChatScreen(peerId: value.docs.first.id, peerUserId: user['uid'], peerUserName: user['name'])),
-                    );
+                    openChat(value.docs.first.id, user['uid'], user['name']);
                   } else {
                     FirebaseFirestore.instance.collection('peers').add({
                       'userIds': [auth.currentUser!.uid, user['uid']],
@@ -168,11 +164,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
                       'peerUserName': user['name'],
                       'createdAt': DateTime.now(),
                     }).then((value) {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ChatScreen(peerId: value.id, peerUserId: user['uid'], peerUserName: user['name'])),
-                      );
+                      openChat(value.id, user['uid'], user['name']);
                     });
                   }
                 });
@@ -193,6 +185,14 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
             ),
         ],
       ),
+    );
+  }
+
+  void openChat(String peerId, String peerUserId, String peerUserName) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ChatScreen(peerId: peerId, peerUserId: peerUserId, peerUserName: peerUserName)),
     );
   }
 }
