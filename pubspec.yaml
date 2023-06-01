@@ -14,9 +14,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_auth: ^4.6.1
-  firebase_core: ^2.13.0
-  cloud_firestore: ^4.7.1
+  firebase_auth: ^4.6.2
+  firebase_core: ^2.13.1
+  cloud_firestore: ^4.8.0
   mongol: ^5.0.0
   shared_preferences: ^2.1.1
 
